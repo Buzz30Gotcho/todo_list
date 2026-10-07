@@ -7,24 +7,19 @@ type Filter = 'all' | 'active' | 'done'
 
 const todos = ref<Todo[]>([])
 const title = ref('')
-const description = ref('')
 const editingId = ref<number | null>(null)
 const editTitle = ref('')
 const editDesc = ref('')
 const filter = ref<Filter>('all')
 const removingIds = ref<number[]>([])
-const loading = ref(true)
 const error = ref('')
 
 async function refresh(): Promise<void> {
   try {
-    loading.value = true
     todos.value = await getTodos()
     error.value = ''
   } catch {
     error.value = "Impossible de contacter l'API. Le backend est-il démarré ?"
-  } finally {
-    loading.value = false
   }
 }
 
@@ -32,9 +27,8 @@ onMounted(refresh)
 
 async function handleAdd(): Promise<void> {
   if (!title.value.trim()) return
-  await createTodo({ title: title.value.trim(), description: description.value.trim() })
+  await createTodo({ title: title.value.trim(), description: '' })
   title.value = ''
-  description.value = ''
   void refresh()
 }
 
@@ -57,21 +51,25 @@ async function saveEdit(id: number): Promise<void> {
 }
 
 function remove(id: number): void {
-  // Lance l'animation de sortie avant la suppression réelle
+  // Animation de sortie avant la suppression réelle
   removingIds.value = [...removingIds.value, id]
   setTimeout(async () => {
     await deleteTodo(id)
     await refresh()
     removingIds.value = removingIds.value.filter((x) => x !== id)
-  }, 280)
+  }, 220)
 }
 
 const total = computed(() => todos.value.length)
 const doneCount = computed(() => todos.value.filter((t) => t.completed).length)
 const remaining = computed(() => total.value - doneCount.value)
-const progress = computed(() =>
-  total.value === 0 ? 0 : Math.round((doneCount.value / total.value) * 100)
-)
+
+const subtitle = computed(() => {
+  if (total.value === 0) return 'Aucune tâche pour le moment'
+  const a = `${remaining.value} active${remaining.value > 1 ? 's' : ''}`
+  const d = `${doneCount.value} terminée${doneCount.value > 1 ? 's' : ''}`
+  return `${a} · ${d}`
+})
 
 const visibleTodos = computed(() =>
   todos.value.filter((t) => {
@@ -83,10 +81,10 @@ const visibleTodos = computed(() =>
 
 const emptyMessage = computed(() =>
   filter.value === 'active'
-    ? { emoji: '🎉', text: 'Rien en cours, tout est fait !' }
+    ? { emoji: '🎉', text: 'Tout est fait, bravo !' }
     : filter.value === 'done'
-      ? { emoji: '🫥', text: 'Aucune tâche terminée pour le moment' }
-      : { emoji: '✨', text: 'Aucune tâche — ajoute la première !' }
+      ? { emoji: '📭', text: 'Aucune tâche terminée' }
+      : { emoji: '📝', text: 'Ajoute ta première tâche' }
 )
 </script>
 
@@ -94,37 +92,33 @@ const emptyMessage = computed(() =>
   <div class="app">
     <div class="card">
       <header class="header">
-        <h1>Todo<span class="accent">List</span></h1>
-        <span class="badge">Vue · TypeScript</span>
+        <h1>Mes tâches</h1>
       </header>
-      <p class="subtitle">
-        <b>{{ doneCount }}</b> / {{ total }} terminée{{ total > 1 ? 's' : '' }} ·
-        <b>{{ remaining }}</b> en cours
-      </p>
-      <div class="progress">
-        <div class="progress-bar" :style="{ width: progress + '%' }"></div>
-      </div>
+      <p class="subtitle">{{ subtitle }}</p>
 
       <form class="add-form" @submit.prevent="handleAdd">
-        <input class="input" placeholder="Nouvelle tâche…" v-model="title" />
-        <input class="input" placeholder="Description (optionnel)" v-model="description" />
+        <input
+          class="input"
+          v-model="title"
+          placeholder="Ajouter une tâche…"
+          autocomplete="off"
+        />
         <button class="btn btn-primary" type="submit">Ajouter</button>
       </form>
 
       <div class="filters">
         <button class="chip" :class="{ active: filter === 'all' }" @click="filter = 'all'">
-          Toutes <span class="count">{{ total }}</span>
+          Toutes
         </button>
         <button class="chip" :class="{ active: filter === 'active' }" @click="filter = 'active'">
-          En cours <span class="count">{{ remaining }}</span>
+          Actives
         </button>
         <button class="chip" :class="{ active: filter === 'done' }" @click="filter = 'done'">
-          Terminées <span class="count">{{ doneCount }}</span>
+          Terminées
         </button>
       </div>
 
       <div v-if="error" class="error">{{ error }}</div>
-      <div v-if="loading" class="empty">Chargement…</div>
       <div v-else-if="visibleTodos.length === 0" class="empty">
         <span class="emoji">{{ emptyMessage.emoji }}</span>
         {{ emptyMessage.text }}
@@ -138,14 +132,20 @@ const emptyMessage = computed(() =>
         >
           <div v-if="editingId === todo.id" class="edit-zone">
             <input class="input" v-model="editTitle" />
-            <input class="input" v-model="editDesc" />
-            <div class="actions">
-              <button class="btn btn-primary" @click="saveEdit(todo.id)">Enregistrer</button>
-              <button class="btn btn-ghost" @click="editingId = null">Annuler</button>
+            <input class="input" v-model="editDesc" placeholder="Description (optionnel)" />
+            <div class="actions" style="opacity: 1">
+              <button class="btn btn-primary btn-sm" @click="saveEdit(todo.id)">
+                Enregistrer
+              </button>
+              <button class="btn btn-ghost btn-sm" @click="editingId = null">Annuler</button>
             </div>
           </div>
           <template v-else>
-            <button class="check" @click="toggle(todo)" aria-label="Terminer">
+            <button
+              class="check"
+              @click="toggle(todo)"
+              aria-label="Marquer comme terminée"
+            >
               {{ todo.completed ? '✓' : '' }}
             </button>
             <div class="content">
@@ -153,8 +153,8 @@ const emptyMessage = computed(() =>
               <span v-if="todo.description" class="item-desc">{{ todo.description }}</span>
             </div>
             <div class="actions">
-              <button class="btn btn-ghost" @click="startEdit(todo)">Modifier</button>
-              <button class="btn btn-danger" @click="remove(todo.id)">Supprimer</button>
+              <button class="btn btn-ghost btn-sm" @click="startEdit(todo)">Modifier</button>
+              <button class="btn btn-danger btn-sm" @click="remove(todo.id)">Supprimer</button>
             </div>
           </template>
         </li>

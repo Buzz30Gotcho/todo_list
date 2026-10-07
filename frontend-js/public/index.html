@@ -6,44 +6,34 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
-    <title>Todo List — JavaScript</title>
+    <title>Mes tâches</title>
   </head>
   <body>
     <div class="app">
       <div class="card">
         <header class="header">
-          <h1>Todo<span class="accent">List</span></h1>
-          <span class="badge">JavaScript</span>
+          <h1>Mes tâches</h1>
         </header>
         <p class="subtitle" id="subtitle"></p>
-        <div class="progress">
-          <div class="progress-bar" id="progressBar"></div>
-        </div>
 
         <form class="add-form" id="addForm">
-          <input class="input" id="titleInput" placeholder="Nouvelle tâche…" />
           <input
             class="input"
-            id="descInput"
-            placeholder="Description (optionnel)"
+            id="titleInput"
+            placeholder="Ajouter une tâche…"
+            autocomplete="off"
           />
           <button class="btn btn-primary" type="submit">Ajouter</button>
         </form>
 
         <div class="filters" id="filters">
-          <button class="chip active" data-filter="all">
-            Toutes <span class="count" id="countAll">0</span>
-          </button>
-          <button class="chip" data-filter="active">
-            En cours <span class="count" id="countActive">0</span>
-          </button>
-          <button class="chip" data-filter="done">
-            Terminées <span class="count" id="countDone">0</span>
-          </button>
+          <button class="chip active" data-filter="all">Toutes</button>
+          <button class="chip" data-filter="active">Actives</button>
+          <button class="chip" data-filter="done">Terminées</button>
         </div>
 
         <div id="content"></div>

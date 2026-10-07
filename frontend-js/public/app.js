@@ -56,12 +56,14 @@ function renderItem(todo) {
 
     const descInput = document.createElement('input')
     descInput.className = 'input'
+    descInput.placeholder = 'Description (optionnel)'
     descInput.value = todo.description || ''
 
     const actions = document.createElement('div')
     actions.className = 'actions'
+    actions.style.opacity = '1'
     actions.append(
-      makeButton('Enregistrer', 'btn btn-primary', async () => {
+      makeButton('Enregistrer', 'btn btn-primary btn-sm', async () => {
         if (!titleInput.value.trim()) return
         await api(`/todos/${todo.id}`, {
           method: 'PUT',
@@ -73,7 +75,7 @@ function renderItem(todo) {
         editingId = null
         refresh()
       }),
-      makeButton('Annuler', 'btn btn-ghost', () => {
+      makeButton('Annuler', 'btn btn-ghost btn-sm', () => {
         editingId = null
         render()
       })
@@ -87,7 +89,7 @@ function renderItem(todo) {
   // Mode affichage
   const check = document.createElement('button')
   check.className = 'check'
-  check.setAttribute('aria-label', 'Terminer')
+  check.setAttribute('aria-label', 'Marquer comme terminée')
   check.textContent = todo.completed ? '✓' : ''
   check.onclick = async () => {
     await api(`/todos/${todo.id}`, {
@@ -113,11 +115,11 @@ function renderItem(todo) {
   const actions = document.createElement('div')
   actions.className = 'actions'
   actions.append(
-    makeButton('Modifier', 'btn btn-ghost', () => {
+    makeButton('Modifier', 'btn btn-ghost btn-sm', () => {
       editingId = todo.id
       render()
     }),
-    makeButton('Supprimer', 'btn btn-danger', () => remove(todo.id))
+    makeButton('Supprimer', 'btn btn-danger btn-sm', () => remove(todo.id))
   )
 
   li.append(check, content, actions)
@@ -129,14 +131,11 @@ function render() {
   const doneCount = todos.filter((t) => t.completed).length
   const remaining = total - doneCount
 
-  el('subtitle').innerHTML =
-    `<b>${doneCount}</b> / ${total} terminée${total > 1 ? 's' : ''} · ` +
-    `<b>${remaining}</b> en cours`
-  el('progressBar').style.width =
-    (total === 0 ? 0 : Math.round((doneCount / total) * 100)) + '%'
-  el('countAll').textContent = total
-  el('countActive').textContent = remaining
-  el('countDone').textContent = doneCount
+  el('subtitle').textContent =
+    total === 0
+      ? 'Aucune tâche pour le moment'
+      : `${remaining} active${remaining > 1 ? 's' : ''} · ` +
+        `${doneCount} terminée${doneCount > 1 ? 's' : ''}`
 
   const visible = todos.filter((t) => {
     if (filter === 'active') return !t.completed
@@ -150,10 +149,10 @@ function render() {
   if (visible.length === 0) {
     const msg =
       filter === 'active'
-        ? { emoji: '🎉', text: 'Rien en cours, tout est fait !' }
+        ? { emoji: '🎉', text: 'Tout est fait, bravo !' }
         : filter === 'done'
-          ? { emoji: '🫥', text: 'Aucune tâche terminée pour le moment' }
-          : { emoji: '✨', text: 'Aucune tâche — ajoute la première !' }
+          ? { emoji: '📭', text: 'Aucune tâche terminée' }
+          : { emoji: '📝', text: 'Ajoute ta première tâche' }
     const div = document.createElement('div')
     div.className = 'empty'
     const span = document.createElement('span')
@@ -178,7 +177,7 @@ function remove(id) {
     await api(`/todos/${id}`, { method: 'DELETE' })
     removingIds.delete(id)
     refresh()
-  }, 280)
+  }, 220)
 }
 
 el('addForm').addEventListener('submit', async (e) => {
@@ -187,10 +186,9 @@ el('addForm').addEventListener('submit', async (e) => {
   if (!title) return
   await api('/todos', {
     method: 'POST',
-    body: JSON.stringify({ title, description: el('descInput').value.trim() }),
+    body: JSON.stringify({ title, description: '' }),
   })
   el('titleInput').value = ''
-  el('descInput').value = ''
   refresh()
 })
 
