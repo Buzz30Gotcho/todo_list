@@ -1,41 +1,52 @@
 services:
+
   db:
     image: postgres:16-alpine
     container_name: todo_db
     environment:
-      POSTGRES_USER: todo
-      POSTGRES_PASSWORD: todo
-      POSTGRES_DB: todolist
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    # Conserve les données même si les conteneurs sont recréés.
     volumes:
       - pgdata:/var/lib/postgresql/data
+    # Indique à Compose quand PostgreSQL accepte les connexions.
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U todo -d todolist"]
+      test: [ "CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\"" ]
       interval: 5s
       timeout: 3s
       retries: 10
     restart: unless-stopped
 
+  # API FastAPI connectée à la base de données.
   backend:
-    build: ./backend
+    build: ./backend_fastapi
     container_name: todo_backend
     environment:
-      DATABASE_URL: postgresql://todo:todo@db:5432/todolist
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     depends_on:
       db:
         condition: service_healthy
+    # Rend l'API accessible sur localhost:8001.
     ports:
       - "8001:8000"
     restart: unless-stopped
 
+  # Frontend JavaScript, accessible sur localhost:8080.
   frontend-js:
     build: ./frontend-js
     container_name: todo_frontend_js
     depends_on:
       - backend
     ports:
-      - "8080:80"
+      - "8083:80"
     restart: unless-stopped
 
+  # Frontend TypeScript, accessible sur localhost:8081.
   frontend-ts:
     build: ./frontend-ts
     container_name: todo_frontend_ts
@@ -45,5 +56,6 @@ services:
       - "8081:80"
     restart: unless-stopped
 
+# Volume Docker persistant pour les données PostgreSQL.
 volumes:
   pgdata:

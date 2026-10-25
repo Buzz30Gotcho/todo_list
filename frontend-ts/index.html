@@ -9,10 +9,36 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="./src/index.css" />
     <title>Mes tâches</title>
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <div class="app">
+      <main class="card">
+        <h1>Mes tâches</h1>
+        <p class="subtitle" id="subtitle">Chargement…</p>
+
+        <form class="add-form" id="addForm">
+          <input
+            class="input"
+            id="titleInput"
+            type="text"
+            placeholder="Ajouter une tâche…"
+            autocomplete="off"
+          />
+          <button class="btn btn-primary" type="submit">Ajouter</button>
+        </form>
+
+        <div class="filters" id="filters">
+          <button class="chip active" data-filter="all">Toutes</button>
+          <button class="chip" data-filter="active">Actives</button>
+          <button class="chip" data-filter="done">Terminées</button>
+        </div>
+
+        <div id="content"></div>
+      </main>
+    </div>
+
+    <script type="module" src="./main.js"></script>
   </body>
 </html>

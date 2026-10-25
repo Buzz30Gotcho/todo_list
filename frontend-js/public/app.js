@@ -1,5 +1,12 @@
 // Front "vanilla JS" : aucune compilation, aucun framework.
 // Le fichier est servi tel quel par nginx (d'où un Dockerfile sans multi-stage).
+import {
+  filterTodos,
+  countStats,
+  formatSubtitle,
+  isValidTitle,
+  emptyMessage,
+} from './logic.js';
 
 const API = '/api'
 
@@ -127,32 +134,19 @@ function renderItem(todo) {
 }
 
 function render() {
-  const total = todos.length
-  const doneCount = todos.filter((t) => t.completed).length
-  const remaining = total - doneCount
+  // Statistiques et sous-titre (via logic.js)
+  const stats = countStats(todos)
+  el('subtitle').textContent = formatSubtitle(stats)
 
-  el('subtitle').textContent =
-    total === 0
-      ? 'Aucune tâche pour le moment'
-      : `${remaining} active${remaining > 1 ? 's' : ''} · ` +
-        `${doneCount} terminée${doneCount > 1 ? 's' : ''}`
-
-  const visible = todos.filter((t) => {
-    if (filter === 'active') return !t.completed
-    if (filter === 'done') return t.completed
-    return true
-  })
+  // Filtrage (via logic.js)
+  const visible = filterTodos(todos, filter)
 
   const content = el('content')
   content.innerHTML = ''
 
   if (visible.length === 0) {
-    const msg =
-      filter === 'active'
-        ? { emoji: '🎉', text: 'Tout est fait, bravo !' }
-        : filter === 'done'
-          ? { emoji: '📭', text: 'Aucune tâche terminée' }
-          : { emoji: '📝', text: 'Ajoute ta première tâche' }
+    // Message d'état vide (via logic.js)
+    const msg = emptyMessage(filter)
     const div = document.createElement('div')
     div.className = 'empty'
     const span = document.createElement('span')

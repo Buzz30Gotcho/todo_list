@@ -14,16 +14,15 @@
   </head>
   <body>
     <div class="app">
-      <div class="card">
-        <header class="header">
-          <h1>Mes tâches</h1>
-        </header>
-        <p class="subtitle" id="subtitle"></p>
+      <main class="card">
+        <h1>Mes tâches</h1>
+        <p class="subtitle" id="subtitle">Chargement…</p>
 
         <form class="add-form" id="addForm">
           <input
             class="input"
             id="titleInput"
+            type="text"
             placeholder="Ajouter une tâche…"
             autocomplete="off"
           />
@@ -37,7 +36,7 @@
         </div>
 
         <div id="content"></div>
-      </div>
+      </main>
     </div>
 
     <script src="app.js"></script>

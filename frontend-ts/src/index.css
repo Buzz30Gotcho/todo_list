@@ -27,41 +27,46 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ---- Layout ---- */
 .app {
   min-height: 100vh;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 56px 16px;
+  padding: 72px 20px;
 }
 
 .card {
   width: 100%;
-  max-width: 560px;
+  max-width: 720px;
+  /* ← plus large (avant 560px) */
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 28px;
+  border-radius: 18px;
+  padding: 36px;
+  /* ← plus d'air (avant 28px) */
   box-shadow: var(--shadow);
 }
 
 h1 {
-  font-size: 22px;
+  font-size: 26px;
+  /* ← avant 22px */
   font-weight: 700;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.3px;
 }
 
 .subtitle {
   color: var(--muted);
-  font-size: 14px;
-  margin: 4px 0 22px;
+  font-size: 15px;
+  /* ← avant 14px */
+  margin: 6px 0 26px;
 }
 
 /* ---- Ajout ---- */
 .add-form {
   display: flex;
-  gap: 10px;
-  margin-bottom: 18px;
+  gap: 12px;
+  margin-bottom: 22px;
 }
 
 .input {
@@ -69,9 +74,11 @@ h1 {
   background: var(--card);
   border: 1px solid var(--border-strong);
   color: var(--text);
-  padding: 11px 14px;
-  border-radius: 10px;
-  font-size: 14px;
+  padding: 14px 18px;
+  /* ← plus grand (avant 11px 14px) */
+  border-radius: 12px;
+  font-size: 15.5px;
+  /* ← avant 14px */
   font-family: inherit;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -89,11 +96,13 @@ h1 {
 .btn {
   border: none;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
+  /* ← avant 14px */
   font-weight: 600;
   font-family: inherit;
-  padding: 11px 16px;
-  border-radius: 10px;
+  padding: 14px 22px;
+  /* ← plus grand (avant 11px 16px) */
+  border-radius: 12px;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
@@ -128,27 +137,31 @@ h1 {
 }
 
 .btn-sm {
-  padding: 6px 11px;
-  font-size: 13px;
+  padding: 8px 14px;
+  /* ← avant 6px 11px */
+  font-size: 13.5px;
+  /* ← avant 13px */
 }
 
 /* ---- Filtres ---- */
 .filters {
   display: flex;
-  gap: 4px;
-  margin-bottom: 10px;
+  gap: 6px;
+  margin-bottom: 14px;
 }
 
 .chip {
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
+  /* ← avant 13px */
   font-weight: 500;
   font-family: inherit;
   color: var(--muted);
   background: transparent;
   border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 8px 16px;
+  /* ← avant 6px 12px */
+  border-radius: 10px;
   transition: background 0.15s, color 0.15s;
 }
 
@@ -167,23 +180,25 @@ h1 {
   background: #fdecec;
   border: 1px solid #f7caca;
   color: var(--danger);
-  padding: 11px 14px;
-  border-radius: 10px;
-  font-size: 14px;
-  margin-bottom: 14px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 15px;
+  margin-bottom: 18px;
 }
 
 .empty {
   text-align: center;
   color: var(--muted);
-  padding: 44px 12px;
-  font-size: 14px;
+  padding: 56px 16px;
+  /* ← avant 44px 12px */
+  font-size: 15px;
 }
 
 .empty .emoji {
   display: block;
-  font-size: 30px;
-  margin-bottom: 8px;
+  font-size: 36px;
+  /* ← avant 30px */
+  margin-bottom: 10px;
 }
 
 /* ---- Liste ---- */
@@ -196,9 +211,10 @@ h1 {
 .item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 10px;
-  border-radius: 10px;
+  gap: 14px;
+  padding: 16px 14px;
+  /* ← avant 12px 10px */
+  border-radius: 12px;
   border-bottom: 1px solid var(--border);
   transition: background 0.15s;
   animation: itemIn 0.18s ease;
@@ -221,6 +237,7 @@ h1 {
     opacity: 0;
     transform: translateY(-4px);
   }
+
   to {
     opacity: 1;
     transform: none;
@@ -236,13 +253,15 @@ h1 {
 
 .check {
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  /* ← avant 20px */
+  height: 24px;
+  /* ← avant 20px */
   border-radius: 50%;
   border: 2px solid var(--border-strong);
   background: #fff;
   color: #fff;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -265,17 +284,19 @@ h1 {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .item-title {
-  font-size: 14.5px;
+  font-size: 15.5px;
+  /* ← avant 14.5px */
   font-weight: 500;
   word-break: break-word;
 }
 
 .item-desc {
-  font-size: 13px;
+  font-size: 14px;
+  /* ← avant 13px */
   color: var(--muted);
   word-break: break-word;
 }
@@ -288,7 +309,7 @@ h1 {
 
 .actions {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   flex-shrink: 0;
   opacity: 0;
   transition: opacity 0.15s;
@@ -301,14 +322,19 @@ h1 {
 .edit-zone {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
 }
 
-@media (max-width: 520px) {
-  .card {
-    padding: 20px;
+@media (max-width: 560px) {
+  .app {
+    padding: 32px 12px;
   }
+
+  .card {
+    padding: 24px;
+  }
+
   .actions {
     opacity: 1;
   }

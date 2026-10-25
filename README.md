@@ -30,6 +30,14 @@ backend FastAPI — donc **aucun problème de CORS** et aucune URL à configurer
 
 Pré-requis : **Docker** + **Docker Compose**.
 
+Créer le fichier `.env` local à partir du modèle, puis adapter les valeurs si
+besoin. Le fichier `.env` contient les identifiants utilisés par PostgreSQL et
+le backend ; il est ignoré par Git.
+
+```bash
+cp .env.example .env
+```
+
 ```bash
 docker compose up --build
 ```
@@ -72,6 +80,7 @@ curl -X POST http://localhost:8001/todos \
 ```
 todolist/
 ├── docker-compose.yml
+├── .env.example         # modèle de configuration locale (sans secret)
 ├── backend/            # FastAPI + SQLAlchemy + PostgreSQL
 │   ├── app/
 │   └── Dockerfile
@@ -114,3 +123,19 @@ npm run dev      # http://localhost:5173
 
 > Hors Docker, pense à ajuster le proxy `/api` (ou à pointer directement vers
 > `http://localhost:8001`), car ici c'est nginx qui assure ce proxy.
+
+## 🧪 Tests et intégration continue
+
+Les tests vérifient les opérations CRUD de l'API et le rejet d'un titre vide.
+Ils utilisent une base SQLite temporaire, sans toucher à PostgreSQL.
+
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+pytest
+```
+
+La CI GitHub Actions lance ces tests à chaque push et pull request, puis
+vérifie la configuration Compose et construit les trois images Docker.
