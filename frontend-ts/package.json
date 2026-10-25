@@ -4,12 +4,13 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "tsc && cp index.html dist/ && mkdir -p dist/src && cp src/index.css dist/src/",
+    "build": "tsc -p tsconfig.build.json && cp index.html dist/ && mkdir -p dist/src && cp src/index.css dist/src/",
     "watch": "tsc --watch",
     "dev": "tsc --watch",
-    "test": "npm run build && node --test dist/logic.test.js"
+    "test": "tsc && node --test dist/logic.test.js"
   },
   "devDependencies": {
-    "typescript": "~5.9.0"
+    "typescript": "~5.9.0",
+    "@types/node": "^22.0.0"
   }
 }
