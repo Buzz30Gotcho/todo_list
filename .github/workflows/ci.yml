@@ -89,4 +89,4 @@ jobs:
 
       # Construit toutes les images (backend + 2 frontends) sans les démarrer.
       - name: Construire les images Docker
-        run: docker compose build
+        run: docker compose build # construit les images dockers
