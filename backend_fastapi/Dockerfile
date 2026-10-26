@@ -20,5 +20,5 @@ COPY tests ./tests
 # Port utilisé par FastAPI à l'intérieur du conteneur.
 EXPOSE 8000
 
-# Démarre l'API et la rend accessible aux autres conteneurs.
+# Lance uvicorn sur le port 8000, accessible depuis les autres conteneurs.
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from . import models, schemas
 from .database import Base, engine, get_db
-
+from fastapi import APIRouter
 
 def init_db() -> None:
     """Attend que PostgreSQL soit prêt puis crée les tables."""
@@ -32,13 +32,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+router = APIRouter()
 
-@app.get("/health")
+@router.get("/health")
 def health():
     return {"status": "ok"}
 
 
-@app.get("/todos", response_model=list[schemas.TodoOut])
+@router.get("/todos", response_model=list[schemas.TodoOut])
 def list_todos(db: Session = Depends(get_db)):
     return (
         db.query(models.Todo)
@@ -47,7 +48,7 @@ def list_todos(db: Session = Depends(get_db)):
     )
 
 
-@app.post("/todos", response_model=schemas.TodoOut, status_code=201)
+@router.post("/todos", response_model=schemas.TodoOut, status_code=201)
 def create_todo(payload: schemas.TodoCreate, db: Session = Depends(get_db)):
     if not payload.title.strip():
         raise HTTPException(status_code=400, detail="Le titre est obligatoire")
@@ -58,7 +59,7 @@ def create_todo(payload: schemas.TodoCreate, db: Session = Depends(get_db)):
     return todo
 
 
-@app.get("/todos/{todo_id}", response_model=schemas.TodoOut)
+@router.get("/todos/{todo_id}", response_model=schemas.TodoOut)
 def get_todo(todo_id: int, db: Session = Depends(get_db)):
     todo = db.get(models.Todo, todo_id)
     if todo is None:
@@ -66,7 +67,7 @@ def get_todo(todo_id: int, db: Session = Depends(get_db)):
     return todo
 
 
-@app.put("/todos/{todo_id}", response_model=schemas.TodoOut)
+@router.put("/todos/{todo_id}", response_model=schemas.TodoOut)
 def update_todo(
     todo_id: int, payload: schemas.TodoUpdate, db: Session = Depends(get_db)
 ):
@@ -81,10 +82,12 @@ def update_todo(
     return todo
 
 
-@app.delete("/todos/{todo_id}", status_code=204)
+@router.delete("/todos/{todo_id}", status_code=204)
 def delete_todo(todo_id: int, db: Session = Depends(get_db)):
     todo = db.get(models.Todo, todo_id)
     if todo is None:
         raise HTTPException(status_code=404, detail="Tâche introuvable")
     db.delete(todo)
     db.commit()
+
+app.include_router(router, prefix="/api")

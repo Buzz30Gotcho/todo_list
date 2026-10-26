@@ -1,3 +1,6 @@
+# docker compose up -d --build
+# http://localhost:8083/
+# http://localhost:8081/
 services:
 
   db:
