@@ -5,11 +5,11 @@
             "root": "backend_fastapi",
             "framework": "fastapi"
         },
-        "frontend-js": {
+        "frontend_js": {
             "root": "frontend-js",
             "runtime": "container"
         },
-        "frontend-ts": {
+        "frontend_ts": {
             "root": "frontend-ts",
             "runtime": "container"
         }
@@ -24,7 +24,7 @@
         {
             "source": "/(.*)",
             "destination": {
-                "service": "frontend-ts"
+                "service": "frontend_ts"
             }
         }
     ]
