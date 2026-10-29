@@ -23,7 +23,9 @@ services:
 
   # API FastAPI connectée à la base de données.
   backend:
-    build: ./backend_fastapi
+    build:
+      context: ./backend_fastapi
+      target: runtime
     container_name: todo_backend
     environment:
       POSTGRES_HOST: db
@@ -39,14 +41,22 @@ services:
       - "8001:8000"
     restart: unless-stopped
 
-  # Frontend JavaScript, accessible sur localhost:8080.
+  # Image séparée pour lancer les tests du backend à la demande.
+  backend-test:
+    build:
+      context: ./backend_fastapi
+      target: test
+    profiles:
+      - test
+
+  # Frontend JavaScript, accessible sur localhost:8083.
   frontend-js:
     build: ./frontend-js
     container_name: todo_frontend_js
     depends_on:
       - backend
     ports:
-      - "8083:80"
+      - "8083:8080"
     restart: unless-stopped
 
   # Frontend TypeScript, accessible sur localhost:8081.
@@ -56,7 +66,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "8081:80"
+      - "8081:8080"
     restart: unless-stopped
 
 # Volume Docker persistant pour les données PostgreSQL.

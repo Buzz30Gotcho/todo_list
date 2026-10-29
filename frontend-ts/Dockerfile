@@ -15,7 +15,7 @@ RUN npm run build
 
 # ---------- Stage 2 : serveur nginx (image finale légère) ----------
 # L'image finale ne contient que Nginx et les fichiers compilés.
-FROM nginx:1.27-alpine
+FROM nginxinc/nginx-unprivileged:1.27-alpine
 
 # Configure le proxy /api vers le backend.
 COPY nginx.conf /etc/nginx/conf.d/default.conf
@@ -23,8 +23,10 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copie le résultat de compilation depuis le premier stage.
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Port HTTP utilisé à l'intérieur du conteneur.
-EXPOSE 80
+# Nginx non-root écoute sur ce port non privilégié.
+EXPOSE 8080
+
+USER 101
 
 # Garde Nginx au premier plan pour que Docker puisse suivre le conteneur.
 CMD ["nginx", "-g", "daemon off;"]

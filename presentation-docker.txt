@@ -1,0 +1,111 @@
+PRESENTATION DU PROJET DOCKER
+
+Mon projet contient une API FastAPI, une base PostgreSQL et deux interfaces
+web : une en JavaScript et une en TypeScript. Docker permet de créer une image
+pour chaque application ; Docker Compose les lance ensemble.
+
+DOCKERFILE DU BACKEND
+
+Le Dockerfile du backend utilise Python pour installer les dépendances et
+lancer l'API avec Uvicorn. Il comporte deux images : "runtime" pour exécuter
+l'API, et "test" pour lancer pytest. Cette séparation évite d'ajouter les
+outils et fichiers de test à l'image de l'application. L'API tourne avec
+l'utilisateur non-root "fastapi" afin de limiter ses privilèges.
+
+
+Le Dockerfile du backend est multi-stage avec 3 stages (3 images nommées via AS) :
+
+1. base (lignes 2-14) — le socle commun
+
+FROM python:3.12-slim AS base
+- Variables d'env Python, WORKDIR /app
+- Installe les dépendances de prod (requirements.txt)
+- Crée l'utilisateur non-root fastapi
+
+C'est la fondation partagée — elle n'est jamais lancée telle quelle, elle sert de base aux deux autres.
+
+2. test (lignes 17-23) — image de test
+
+FROM base AS test
+- Repart de base, ajoute en plus les dépendances de dev (requirements-dev.txt, dont pytest)
+- Copie app/ et tests/
+- CMD = lance pytest
+
+C'est le target: test du service backend-test dans ton docker-compose (profil test).
+
+3. runtime (lignes 26-32) — image de production
+
+FROM base AS runtime
+- Repart de base, copie seulement app/ (pas les tests, pas pytest)
+- CMD = lance uvicorn
+
+C'est le target: runtime du service backend dans docker-compose.
+
+L'intérêt de ce découpage
+
+┌─────────┬───────────────────┬───────────────────┬─────────────────────┐
+│  Stage  │ Contient pytest ? │ Contient tests/ ? │        Rôle         │
+├─────────┼───────────────────┼───────────────────┼─────────────────────┤
+│ base    │ non               │ non               │ socle réutilisé     │
+├─────────┼───────────────────┼───────────────────┼─────────────────────┤
+│ test    │ ✅ oui            │ ✅ oui            │ CI / tests          │
+├─────────┼───────────────────┼───────────────────┼─────────────────────┤
+│ runtime │ ❌ non            │ ❌ non            │ prod (image légère) │
+└─────────┴───────────────────┴───────────────────┴─────────────────────┘
+
+Le but : l'image de prod reste minimale et sûre (pas d'outils de test ni de code de test embarqués), tout en mutualisant l'installation des dépendances communes via base — donc build plus rapide et pas de duplication.
+
+Petite nuance de vocabulaire : on parle de 3 stages (étapes de build). À la fin, seuls test et runtime sont des cibles qu'on construit réellement (target: dans compose) ; base est une étape intermédiaire. Techniquement Docker crée bien une couche/image intermédiaire pour base, donc dire « 3 images » n'est pas faux.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DOCKERFILE DU FRONTEND JAVASCRIPT
+
+Le navigateur peut lire directement le JavaScript : il n'y a pas besoin de
+le compiler. Nginx sert donc les fichiers du site. Il utilise un utilisateur
+non-root déjà fourni par l'image Nginx, et écoute sur le port interne 8080.
+
+DOCKERFILE DU FRONTEND TYPESCRIPT
+
+Le TypeScript doit être compilé avant d'être utilisé par le navigateur. Le
+Dockerfile a donc deux étapes : Node.js compile le projet, puis Nginx sert
+les fichiers produits. L'image finale ne contient que Nginx et le site
+compilé, pas Node.js ni les outils de build. Nginx tourne également sans root.
+
+DOCKER COMPOSE
+
+Compose lance PostgreSQL, l'API et les deux frontends. Il les relie sur le
+réseau Docker et attend que PostgreSQL soit prêt avant de lancer l'API.
+Un volume conserve les données de la base quand les conteneurs sont recréés.
+
+Les services sont accessibles depuis mon ordinateur :
+- API : http://localhost:8001
+- Frontend JavaScript : http://localhost:8083
+- Frontend TypeScript : http://localhost:8081
+
+Pour lancer l'application :
+    docker compose up --build -d
+
+Pour lancer les tests du backend dans Docker :
+    docker compose run --build --rm backend-test
+
+À NOTER
+
+Le proxy vers l'API est configuré pour le frontend JavaScript. Il est encore
+commenté pour le frontend TypeScript.

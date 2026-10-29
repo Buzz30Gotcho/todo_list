@@ -1,24 +1,32 @@
-# Image Python utilisée pour exécuter l'API.
-FROM python:3.12-slim
+# Dépendances communes aux images d'exécution et de test.
+FROM python:3.12-slim AS base
 
-# Évite les fichiers Python inutiles et affiche les logs immédiatement.
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-# Tous les fichiers et toutes les commandes suivants utilisent /app.
 WORKDIR /app
 
-# Installe les bibliothèques nécessaires à l'API.
+# Installe uniquement les dépendances nécessaires à l'application.
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Crée un utilisateur non-root commun aux deux images.
+RUN groupadd -r fastapi && useradd -r -g fastapi fastapi
+
+# Image utilisée uniquement pour exécuter les tests.
+FROM base AS test
 COPY requirements-dev.txt .
-RUN pip install --no-cache-dir -r requirements.txt  -r requirements-dev.txt
+RUN pip install --no-cache-dir -r requirements-dev.txt
+COPY --chown=fastapi:fastapi app ./app
+COPY --chown=fastapi:fastapi tests ./tests
+USER fastapi
+CMD ["python", "-m", "pytest", "-p", "no:cacheprovider"]
 
-# Ajoute le code du backend dans l'image.
-COPY app ./app
-COPY tests ./tests
+# Image d'exécution : elle ne contient ni pytest ni les fichiers de test.
+FROM base AS runtime
+COPY --chown=fastapi:fastapi app ./app
+USER fastapi
 
-# Port utilisé par FastAPI à l'intérieur du conteneur.
 EXPOSE 8000
 
-# Lance uvicorn sur le port 8000, accessible depuis les autres conteneurs.
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

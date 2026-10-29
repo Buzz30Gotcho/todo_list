@@ -90,3 +90,7 @@ jobs:
       # Construit toutes les images (backend + 2 frontends) sans les démarrer.
       - name: Construire les images Docker
         run: docker compose build # construit les images dockers
+
+      # Vérifie aussi le stage Docker dédié aux tests du backend.
+      - name: Exécuter les tests backend dans Docker
+        run: docker compose --profile test run --build --rm backend-test

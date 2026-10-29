@@ -18,31 +18,31 @@ def client():
 # Vérifie le cycle complet : créer, lister, modifier, supprimer.
 def test_todo_crud(client):
     created = client.post(
-        "/todos",
+        "/api/todos",
         json={"title": "Tester l'API", "description": "Test simple"},
     )
     assert created.status_code == 201
     todo = created.json()
     assert todo["title"] == "Tester l'API"
 
-    listed = client.get("/todos")
+    listed = client.get("/api/todos")
     assert listed.status_code == 200
     assert len(listed.json()) == 1
 
     updated = client.put(
-        f"/todos/{todo['id']}",
+        f"/api/todos/{todo['id']}",
         json={"completed": True},
     )
     assert updated.status_code == 200
     assert updated.json()["completed"] is True
 
-    deleted = client.delete(f"/todos/{todo['id']}")
+    deleted = client.delete(f"/api/todos/{todo['id']}")
     assert deleted.status_code == 204
-    assert client.get(f"/todos/{todo['id']}").status_code == 404
+    assert client.get(f"/api/todos/{todo['id']}").status_code == 404
 
 # Vérifie qu'un titre vide est refusé.
 def test_rejects_blank_title(client):
-    response = client.post("/todos", json={"title": "   "})
+    response = client.post("/api/todos", json={"title": "   "})
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Le titre est obligatoire"
