@@ -11,7 +11,7 @@ même API REST FastAPI et la même base PostgreSQL.
 | `db` | PostgreSQL 16 | interne | image officielle |
 | `backend` | Python · FastAPI · SQLAlchemy | **8001** | simple |
 | `frontend-js` | **JavaScript pur** (vanilla) | **8083** | **simple** (nginx, sans build) |
-| `frontend-ts` | **TypeScript pur** (sans framework) | **8081** | **multi-stage** (Node → nginx) |
+| `frontend-ts` | **TypeScript pur** (sans framework) | **8084** | **multi-stage** (Node → nginx) |
 
 Les deux frontends sont servis par **nginx** et proxifient `/api/` vers le
 backend FastAPI — donc **aucun problème de CORS** et aucune URL à configurer.
@@ -41,7 +41,7 @@ docker compose up --build -d
 Puis ouvrir :
 
 - 🟢 Front JavaScript → http://localhost:8083
-- 🔵 Front TypeScript → http://localhost:8081
+- 🔵 Front TypeScript → http://localhost:8084
 - ⚙️ API (docs Swagger) → http://localhost:8001/docs
 
 Pour tout arrêter :

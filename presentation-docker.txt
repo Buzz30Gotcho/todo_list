@@ -97,7 +97,7 @@ Un volume conserve les données de la base quand les conteneurs sont recréés.
 Les services sont accessibles depuis mon ordinateur :
 - API : http://localhost:8001
 - Frontend JavaScript : http://localhost:8083
-- Frontend TypeScript : http://localhost:8081
+- Frontend TypeScript : http://localhost:8084
 
 Pour lancer l'application :
     docker compose up --build -d

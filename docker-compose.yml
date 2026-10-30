@@ -1,6 +1,7 @@
 # docker compose up -d --build
 # http://localhost:8083/
-# http://localhost:8081/
+# http://localhost:8084/
+# docker compose --profile test run --build --rm backend-test
 services:
 
   db:
@@ -59,14 +60,14 @@ services:
       - "8083:8080"
     restart: unless-stopped
 
-  # Frontend TypeScript, accessible sur localhost:8081.
+  # Frontend TypeScript, accessible sur localhost:8084.
   frontend-ts:
     build: ./frontend-ts
     container_name: todo_frontend_ts
     depends_on:
       - backend
     ports:
-      - "8081:80"
+      - "8084:80"
     restart: unless-stopped
 
 # Volume Docker persistant pour les données PostgreSQL.
