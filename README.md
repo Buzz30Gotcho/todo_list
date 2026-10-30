@@ -9,12 +9,17 @@ même API REST FastAPI et la même base PostgreSQL.
 | Service | Techno | Port local | Dockerfile |
 | --- | --- | --- | --- |
 | `db` | PostgreSQL 16 | interne | image officielle |
-| `backend` | Python · FastAPI · SQLAlchemy | **8001** | simple |
+| `backend` | Python · FastAPI · SQLAlchemy | **8001** | multi-stage (runtime) |
 | `frontend-js` | **JavaScript pur** (vanilla) | **8083** | **simple** (nginx, sans build) |
 | `frontend-ts` | **TypeScript pur** (sans framework) | **8084** | **multi-stage** (Node → nginx) |
 
-Les deux frontends sont servis par **nginx** et proxifient `/api/` vers le
-backend FastAPI — donc **aucun problème de CORS** et aucune URL à configurer.
+Les deux frontends sont servis par **nginx** et, dans Docker Compose,
+proxifient `/api/` vers le backend FastAPI — donc aucune URL à configurer
+dans le navigateur.
+
+Le frontend TypeScript écoute sur le port interne **80** pour Vercel ; Compose
+le publie sur le port local **8084**. Le frontend JavaScript écoute en interne
+sur **8080** et Compose le publie sur **8083**.
 
 > **L'intérêt pédagogique est dans la différence des deux Dockerfiles :**
 >
@@ -29,12 +34,11 @@ backend FastAPI — donc **aucun problème de CORS** et aucune URL à configurer
 
 Pré-requis : **Docker** + **Docker Compose**.
 
-Créer le fichier `.env` local à partir du modèle, puis adapter les valeurs si
-besoin. Le fichier `.env` contient les identifiants utilisés par PostgreSQL et
-le backend ; il est ignoré par Git.
+Créer un fichier `.env` à la racine avec les variables `POSTGRES_USER`,
+`POSTGRES_PASSWORD` et `POSTGRES_DB`. Ces identifiants sont utilisés par
+PostgreSQL et le backend ; le fichier `.env` ne doit pas être ajouté à Git.
 
 ```bash
-cp .env.example .env
 docker compose up --build -d
 ```
 
@@ -57,16 +61,16 @@ Base : http://localhost:8001
 
 | Méthode | Route | Description |
 | --- | --- | --- |
-| GET | `/todos` | Liste toutes les tâches |
-| POST | `/todos` | Crée une tâche |
-| GET | `/todos/{id}` | Récupère une tâche |
-| PUT | `/todos/{id}` | Met à jour une tâche |
-| DELETE | `/todos/{id}` | Supprime une tâche |
+| GET | `/api/todos` | Liste toutes les tâches |
+| POST | `/api/todos` | Crée une tâche |
+| GET | `/api/todos/{id}` | Récupère une tâche |
+| PUT | `/api/todos/{id}` | Met à jour une tâche |
+| DELETE | `/api/todos/{id}` | Supprime une tâche |
 
 Exemple :
 
 ```bash
-curl -X POST http://localhost:8001/todos \
+curl -X POST http://localhost:8001/api/todos \
   -H "Content-Type: application/json" \
   -d '{"title": "Apprendre Docker", "description": "Multi-stage build"}'
 ```
@@ -76,7 +80,6 @@ curl -X POST http://localhost:8001/todos \
 ```text
 todolist/
 ├── docker-compose.yml
-├── .env.example          # modèle de configuration locale (sans secret)
 ├── .github/
 │   └── workflows/
 │       └── ci.yml        # CI GitHub Actions
@@ -154,7 +157,9 @@ Le projet est testé à 3 niveaux.
 ### Backend (`pytest`)
 
 ```bash
-docker compose exec backend python -m pytest -v
+cd backend_fastapi
+python3 -m pip install -r requirements.txt -r requirements-dev.txt
+python3 -m pytest -v
 ```
 
 2 tests : `test_todo_crud` (CRUD complet) et `test_rejects_blank_title`
@@ -167,6 +172,7 @@ docker compose exec backend python -m pytest -v
 
 ```bash
 cd frontend-js
+npm ci
 npm test
 ```
 
@@ -179,6 +185,7 @@ Logique pure extraite dans `logic.js`, testée sans DOM.
 
 ```bash
 cd frontend-ts
+npm ci
 npm test
 ```
 
@@ -200,10 +207,22 @@ La CI se lance sur chaque push et pull request. Elle contient 3 jobs :
 | `frontend-tests` | Matrice `frontend-js` / `frontend-ts`, lance `npm ci && npm test` |
 | `docker-build` | `docker compose config --quiet` + `docker compose build` |
 
-Ce que la CI ne fait pas : elle ne démarre pas les conteneurs
-(`docker compose up`). Elle valide la configuration et construit les images,
-ce qui suffit à détecter les erreurs de Dockerfile, de dépendances et de
-compilation.
+Les tests backend sont lancés directement dans le job Python de la CI, pas
+dans un conteneur de test. L'image Docker du backend ne contient que
+l'application runtime. Le job Docker vérifie la configuration Compose et
+construit les images, sans démarrer les services.
+
+## ☁️ Déploiement Vercel
+
+`vercel.json` configure les services conteneurisés du frontend JavaScript,
+du frontend TypeScript et du backend FastAPI. Les requêtes `/api/...` sont
+réécrites vers le service backend ; les autres requêtes sont envoyées au
+frontend TypeScript. Son Nginx écoute sur le port **80**, attendu par Vercel.
+
+Le backend a besoin d'une base PostgreSQL accessible depuis Vercel. Configurer
+la variable `DATABASE_URL` dans les variables d'environnement du projet Vercel ;
+en local avec Compose, le backend utilise les variables `POSTGRES_*` et le
+service de base de données `db`.
 
 ## 🧠 Choix techniques
 
@@ -260,9 +279,6 @@ docker compose ps
 
 # Logs d'un service
 docker compose logs -f backend
-
-# Tests backend
-docker compose exec backend python -m pytest -v
 
 # Rebuild un seul service
 docker compose up --build -d frontend-ts
