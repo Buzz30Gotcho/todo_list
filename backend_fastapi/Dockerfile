@@ -1,5 +1,5 @@
 # Dépendances de l'image d'exécution.
-FROM python:3.12-slim AS base
+FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
@@ -13,8 +13,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Crée un utilisateur non-root commun aux deux images.
 RUN groupadd -r fastapi && useradd -r -g fastapi fastapi
 
-# Image d'exécution.
-FROM base AS runtime
 COPY --chown=fastapi:fastapi app ./app
 USER fastapi
 

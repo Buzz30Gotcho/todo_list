@@ -25,7 +25,6 @@ services:
   backend:
     build:
       context: ./backend_fastapi
-      target: runtime
     container_name: todo_backend
     environment:
       POSTGRES_HOST: db
