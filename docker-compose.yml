@@ -1,7 +1,6 @@
 # docker compose up -d --build
 # http://localhost:8083/
 # http://localhost:8084/
-# docker compose --profile test run --build --rm backend-test
 services:
 
   db:
@@ -41,14 +40,6 @@ services:
     ports:
       - "8001:8000"
     restart: unless-stopped
-
-  # Image séparée pour lancer les tests du backend à la demande.
-  backend-test:
-    build:
-      context: ./backend_fastapi
-      target: test
-    profiles:
-      - test
 
   # Frontend JavaScript, accessible sur localhost:8083.
   frontend-js:
